@@ -132,32 +132,30 @@ print("   Saved: charts/01_funding_distribution.png")
 plt.close()
 
 # ========================================
-# CHART 2: Geographic Distribution
+# CHART 2: Geographic Distribution (single bar chart)
 # ========================================
-print("[2/8] Creating geographic distribution chart...")
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+print("[2/8] Creating geographic distribution chart (horizontal bar)...")
+fig, ax = plt.subplots(figsize=(14, 8))
 
-# Pie chart
-city_counts = df['city'].value_counts()
-colors_pie = plt.cm.Set3(range(len(city_counts)))
-wedges, texts, autotexts = ax1.pie(city_counts.values, labels=city_counts.index, autopct='%1.1f%%',
-                                     colors=colors_pie, startangle=90)
-for autotext in autotexts:
-    autotext.set_color('white')
-    autotext.set_fontweight('bold')
-    autotext.set_fontsize(11)
-ax1.set_title('Companies by City (Distribution)', fontsize=14, fontweight='bold', pad=20)
+# Count companies per city and sort for better readability (smallest→largest so largest appear on top)
+city_counts = df['city'].value_counts().sort_values(ascending=True)
 
-# Bar chart
-city_counts.plot(kind='barh', ax=ax2, color=colors_pie[:len(city_counts)])
-ax2.set_xlabel('Number of Companies', fontsize=11, fontweight='bold')
-ax2.set_ylabel('City', fontsize=11, fontweight='bold')
-ax2.set_title('Companies by City (Count)', fontsize=14, fontweight='bold', pad=20)
+# Use a colormap sized to the number of cities
+colors_pie = plt.cm.tab20(np.linspace(0, 1, len(city_counts)))
 
-# Add value labels on bars
+# Horizontal bar chart
+ax.barh(city_counts.index, city_counts.values, color=colors_pie)
+ax.set_xlabel('Number of Companies', fontsize=12, fontweight='bold')
+ax.set_title('Companies by City (Count)', fontsize=16, fontweight='bold', pad=20)
+
+# Add value labels at the end of each bar
+max_count = city_counts.values.max() if len(city_counts) else 1
+label_x_offset = max_count * 0.01  # small offset so labels don't overlap bars
 for i, v in enumerate(city_counts.values):
-    ax2.text(v + 0.5, i, str(v), va='center', fontweight='bold')
+    ax.text(v + label_x_offset, i, str(v), va='center', fontweight='bold', fontsize=10)
 
+# Improve layout if there are many cities
+ax.set_xlim(0, max_count * 1.08)
 plt.tight_layout()
 plt.savefig('charts/02_geographic_distribution.png', dpi=300, bbox_inches='tight')
 print("   Saved: charts/02_geographic_distribution.png")
